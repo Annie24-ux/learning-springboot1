@@ -41,27 +41,33 @@ public class BusinessService {
     }
 
     public Business updateBusiness(Long id, Business updatedBusiness) {
-            Business existingBusiness = businessRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Business not found"));
+            Optional<Business> existingBusiness = businessRepository.findById(id);
 
-            boolean businessExists = businessRepository.existsByNameAndDescriptionAndLocationAndContactAndOwnerAndId(existingBusiness.getName(), existingBusiness.getDescription(),
-                    existingBusiness.getLocation(), existingBusiness.getContact(), existingBusiness.getOwner(), id);
+        if(existingBusiness.isPresent()) {
+            Business newBusinessData = existingBusiness.get();
+            newBusinessData.setName(updatedBusiness.getName());
+            newBusinessData.setDescription(updatedBusiness.getDescription());
+            newBusinessData.setLocation(updatedBusiness.getLocation());
+            newBusinessData.setContact(updatedBusiness.getContact());
+            newBusinessData.setOwner(updatedBusiness.getOwner());
 
-            if(businessExists){
+            boolean businessExists = businessRepository.
+                    existsByNameAndDescriptionAndLocationAndContactAndOwnerAndId(
+                            newBusinessData.getName(), newBusinessData.getDescription(),
+                    newBusinessData.getLocation(), newBusinessData.getContact(),
+                    newBusinessData.getOwner(), id);
+
+            if(businessExists) {
                 System.out.println("Choose another name or location");
-                return  businessRepository.save(null);
-//                throw new RuntimeException("Another business with the same name and location already exists");
+                return businessRepository.save(null);
             } else {
-                existingBusiness.setName(updatedBusiness.getName());
-                existingBusiness.setDescription(updatedBusiness.getDescription());
-                existingBusiness.setLocation(updatedBusiness.getLocation());
-                existingBusiness.setContact(updatedBusiness.getContact());
-                existingBusiness.setOwner(updatedBusiness.getOwner());
-
-                return businessRepository.save(existingBusiness);
-
-            }
+                return businessRepository.save(newBusinessData);
+        }
+        }
+        return businessRepository.save(null);
     }
+
+
 
     public Business getBusinessById(Long id) {
         Optional<Business> businessByTheId = businessRepository.findById(id);
