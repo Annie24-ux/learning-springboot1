@@ -53,23 +53,28 @@ public class BusinessController{
 
     @PutMapping("/{id}")
     public ResponseEntity<Business> updateBusiness(@PathVariable Long id, @RequestBody Business updatedBusiness) {
-        Business newBusiness = businessService.updateBusiness(id, updatedBusiness);
-        return ResponseEntity.ok(newBusiness);
 
+        try {
+            Business newBusiness = businessService.updateBusiness(id, updatedBusiness);
+            return ResponseEntity.ok(newBusiness);
+        } catch (RuntimeException e) {
+            System.out.println("Duplicates are not allowed.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+        }
     }
 
 
 
-//    @GetMapping("/{name}")
-//    public ResponseEntity<List<String>> getBusinessesByName(@PathVariable String name) {
-//        List<String> ownersBusiness = businessService.getBusinessByOwner(name);
-//
-//        if (ownersBusiness.isEmpty()) {
-//            return ResponseEntity.noContent().build();
-//        }
-//
-//        return ResponseEntity.ok(ownersBusiness);
-//    }
+    @GetMapping("/{name}")
+    public ResponseEntity<List<Business>> getBusinessesByName(@PathVariable String name) {
+
+
+        List<Business> ownersBusiness = businessService.businessesByOwners(name);
+        if (ownersBusiness.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(ownersBusiness);
+    }
 
 
 }
