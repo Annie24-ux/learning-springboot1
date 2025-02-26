@@ -25,18 +25,6 @@ public class BusinessController{
         this.businessRepository = businessRepository;
     }
 
-    @PostMapping
-    public ResponseEntity<Business>  addBusiness(@RequestBody Business business) {
-
-        try{
-            Business addedBusiness = businessService.saveBusiness(business);
-            return ResponseEntity.ok(addedBusiness);
-
-        }  catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
-        }
-    }
-
     @GetMapping
     public ResponseEntity<List<Business>> getBusinesses() {
         List<Business> businesses = businessService.getBusinesses();
@@ -46,9 +34,13 @@ public class BusinessController{
 
     @GetMapping("/{id}")
     public ResponseEntity<Business> getBusinessbyId(@PathVariable Long id) {
-        Business businessWithId = businessService.getBusinessById(id);
 
-        return ResponseEntity.ok(businessWithId);
+        try{
+            Business businessWithId = businessService.getBusinessById(id);
+            return ResponseEntity.ok(businessWithId);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
     }
 
     @PutMapping("/{id}")
@@ -74,6 +66,18 @@ public class BusinessController{
             return ResponseEntity.noContent().build();
         }
         return ResponseEntity.ok(ownersBusiness);
+    }
+
+    @PostMapping
+    public ResponseEntity<Business>  addBusiness(@RequestBody Business business) {
+
+        try{
+            Business addedBusiness = businessService.saveBusiness(business);
+            return ResponseEntity.ok(addedBusiness);
+
+        }  catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+        }
     }
 
 

@@ -48,7 +48,7 @@ public class BusinessService {
         if(allBusinesses == null) return false;
 
         for(Business business: allBusinesses) {
-            if(business.getName() == x.getName() && business.getLocation() == x.getLocation()) {
+            if(business.getName().equals(x.getName()) && business.getLocation().equals(x.getLocation())) {
                 return true;
             }
     }
@@ -78,20 +78,9 @@ public class BusinessService {
 
 
     public Business getBusinessById(Long id) {
-        Optional<Business> businessByTheId = businessRepository.findById(id);
-        System.out.println("Retrieved from DB: " + businessByTheId);
-
-
-        if(businessByTheId.isPresent()){
-            return businessByTheId.get();
-        } else {
-            System.out.println("Such business does not exist");
-            throw new RuntimeException("Business with ID " + id + " not found");
-        }
+        return businessRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Business with ID " + id + " not found"));
     }
-
-
-
 
 
 
@@ -104,7 +93,7 @@ public class BusinessService {
             if(business1.getOwner().trim().equals(owner.trim())){
                 ownersBusiness.add(getBusinessById(business1.getId()));
             }else{
-                System.out.println("Owner needs to work hard and start businesses :)");
+                System.out.println("Owner has no business :)");
                 return noBusinesses;
             }
         }
