@@ -25,6 +25,49 @@ public class BusinessController{
         this.businessRepository = businessRepository;
     }
 
+    @GetMapping
+    public ResponseEntity<List<Business>> getBusinesses() {
+        List<Business> businesses = businessService.getBusinesses();
+
+        return ResponseEntity.ok(businesses);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<Business> getBusinessbyId(@PathVariable Long id) {
+
+        try{
+            Business businessWithId = businessService.getBusinessById(id);
+            return ResponseEntity.ok(businessWithId);
+        } catch (RuntimeException e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<Business> updateBusiness(@PathVariable Long id, @RequestBody Business updatedBusiness) {
+
+        try {
+            Business newBusiness = businessService.updateBusiness(id, updatedBusiness);
+            return ResponseEntity.ok(newBusiness);
+        } catch (RuntimeException e) {
+            System.out.println("Duplicates are not allowed.");
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
+        }
+    }
+
+
+
+    @GetMapping("/{name}")
+    public ResponseEntity<List<Business>> getBusinessesByName(@PathVariable String name) {
+
+
+        List<Business> ownersBusiness = businessService.businessesByOwners(name);
+        if (ownersBusiness.isEmpty()) {
+            return ResponseEntity.noContent().build();
+        }
+        return ResponseEntity.ok(ownersBusiness);
+    }
+
     @PostMapping
     public ResponseEntity<Business>  addBusiness(@RequestBody Business business) {
 
@@ -36,40 +79,6 @@ public class BusinessController{
             return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
         }
     }
-
-    @GetMapping
-    public ResponseEntity<List<Business>> getBusinesses() {
-        List<Business> businesses = businessService.getBusinesses();
-
-        return ResponseEntity.ok(businesses);
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Business> getBusinessbyId(@PathVariable Long id) {
-        Business businessWithId = businessService.getBusinessById(id);
-
-        return ResponseEntity.ok(businessWithId);
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Business> updateBusiness(@PathVariable Long id, @RequestBody Business updatedBusiness) {
-        Business newBusiness = businessService.updateBusiness(id, updatedBusiness);
-        return ResponseEntity.ok(newBusiness);
-
-    }
-
-
-
-//    @GetMapping("/{name}")
-//    public ResponseEntity<List<String>> getBusinessesByName(@PathVariable String name) {
-//        List<String> ownersBusiness = businessService.getBusinessByOwner(name);
-//
-//        if (ownersBusiness.isEmpty()) {
-//            return ResponseEntity.noContent().build();
-//        }
-//
-//        return ResponseEntity.ok(ownersBusiness);
-//    }
 
 
 }

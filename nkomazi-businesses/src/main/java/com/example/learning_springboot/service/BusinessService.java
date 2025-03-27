@@ -7,12 +7,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
 @Service
 public class BusinessService {
     private final BusinessRepository businessRepository;
+    public List<Business> ownersBusiness = new ArrayList<>();
 
     @Autowired
     public BusinessService(BusinessRepository businessRepository) {
@@ -40,42 +42,66 @@ public class BusinessService {
         return allBusinesses;
     }
 
-    public Business updateBusiness(Long id, Business updatedBusiness) {
-            Business existingBusiness = businessRepository.findById(id)
-                    .orElseThrow(() -> new RuntimeException("Business not found"));
+    public boolean isBusinessADuplicate(Business x) {
+        List<Business> allBusinesses = getBusinesses();
 
-            boolean businessExists = businessRepository.existsByNameAndDescriptionAndLocationAndContactAndOwnerAndId(existingBusiness.getName(), existingBusiness.getDescription(),
-                    existingBusiness.getLocation(), existingBusiness.getContact(), existingBusiness.getOwner(), id);
+        if(allBusinesses == null) return false;
 
-            if(businessExists){
-                System.out.println("Choose another name or location");
-                return  businessRepository.save(null);
-//                throw new RuntimeException("Another business with the same name and location already exists");
-            } else {
-                existingBusiness.setName(updatedBusiness.getName());
-                existingBusiness.setDescription(updatedBusiness.getDescription());
-                existingBusiness.setLocation(updatedBusiness.getLocation());
-                existingBusiness.setContact(updatedBusiness.getContact());
-                existingBusiness.setOwner(updatedBusiness.getOwner());
-
-                return businessRepository.save(existingBusiness);
-
+        for(Business business: allBusinesses) {
+            if(business.getName().equals(x.getName()) && business.getLocation().equals(x.getLocation())) {
+                return true;
             }
     }
+        return false;
+    }
+
+    public Business updateBusiness(Long id, Business updatedBusiness) {
+            Optional<Business> existingBusiness = businessRepository.findById(id);
+
+        if(existingBusiness.isPresent()) {
+            Business newBusinessData = existingBusiness.get();
+            newBusinessData.setName(updatedBusiness.getName());
+            newBusinessData.setDescription(updatedBusiness.getDescription());
+            newBusinessData.setLocation(updatedBusiness.getLocation());
+            newBusinessData.setContact(updatedBusiness.getContact());
+            newBusinessData.setOwner(updatedBusiness.getOwner());
+
+            if(isBusinessADuplicate(newBusinessData)) {
+                System.out.println("Choose another name or location");
+                return businessRepository.save(null);
+            } else {
+                return businessRepository.save(newBusinessData);
+        }
+        }
+        return businessRepository.save(null);
+    }
+
 
     public Business getBusinessById(Long id) {
-        Optional<Business> businessByTheId = businessRepository.findById(id);
+        return businessRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Business with ID " + id + " not found"));
+    }
 
-        if(businessByTheId.isPresent()){
-            return businessByTheId.get();
-        }else{
-            System.out.println("Such business does not exist");
-            throw new RuntimeException();
+
+
+    public List<Business> businessesByOwners(String owner) {
+//        String[] details = owner.split(" ");
+        List<Business> totalBUsinesses = getBusinesses();
+        List<Business> noBusinesses = new ArrayList<>();
+
+        for(Business business1 : totalBUsinesses ){
+            if(business1.getOwner().trim().equals(owner.trim())){
+                ownersBusiness.add(getBusinessById(business1.getId()));
+            }else{
+                System.out.println("Owner has no business :)");
+                return noBusinesses;
+            }
         }
+        return ownersBusiness;
+    }
     }
 
 
-    }
 
 
 
